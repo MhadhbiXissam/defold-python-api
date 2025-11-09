@@ -1,1 +1,4 @@
 defoldsdk==1.3.7
+pyqt5
+pydantic
+toml

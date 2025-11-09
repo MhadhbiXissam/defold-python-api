@@ -5,12 +5,21 @@
       "label": "Ensure .venv",
       "type": "shell",
       "command": "make",
-      "args": [
-        "-f" ,"Makefile" , "onstartup"
-      ],
+      "args": ["-f", "Makefile", "onstartup"],
       "problemMatcher": [],
       "runOptions": {
         "runOn": "folderOpen"
+      }
+    },
+    {
+      "label": "Build",
+      "type": "shell",
+      "command": "make",
+      "args": ["-f", "Makefile", "build"],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
       }
     }
   ]
