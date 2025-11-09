@@ -1,0 +1,1989 @@
+syntax = "proto3";
+enum AlphaMode {
+  ALPHA_MODE_OPAQUE = 0;
+  ALPHA_MODE_MASK = 1;
+  ALPHA_MODE_BLEND = 2;
+  ALPHA_MODE_MAX_ENUM = 3;
+}
+message Sampler {
+  optional string name = 1;
+  optional uint32 index = 2;
+  optional uint32 magFilter = 3 [default = 9728];
+  optional uint32 minFilter = 4 [default = 9728];
+  optional uint32 wrapS = 5 [default = 10497];
+  optional uint32 wrapT = 6 [default = 10497];
+}
+message Texture {
+  optional string name = 1;
+  optional int32 index = 2 [default = -1];
+  optional string path = 3;
+  optional Sampler sampler = 4;
+}
+message TextureTransform {
+  optional float offset_x = 1 [default = 0];
+  optional float offset_y = 2 [default = 0];
+  optional float scale_x = 3 [default = 1];
+  optional float scale_y = 4 [default = 1];
+  optional float rotation = 5 [default = 0];
+  optional int32 texcoord = 6 [default = -1];
+}
+message TextureView {
+  optional Texture texture = 1;
+  optional int32 texcoord = 2 [default = -1];
+  optional float scale = 3 [default = 1];
+  optional TextureTransform transform = 4;
+}
+message PbrMetallicRoughness {
+  optional TextureView baseColorTexture = 1;
+  optional TextureView metallicRoughnessTexture = 2;
+  optional dmMath.Vector4One baseColorFactor = 3;
+  optional float metallicFactor = 4 [default = 1];
+  optional float roughnessFactor = 5 [default = 1];
+}
+message PbrSpecularGlossiness {
+  optional TextureView diffuseTexture = 1;
+  optional TextureView specularGlossinessTexture = 2;
+  optional dmMath.Vector4One diffuseFactor = 3;
+  optional dmMath.Vector3One specularFactor = 4;
+  optional float glossinessFactor = 5 [default = 1];
+}
+message Clearcoat {
+  optional TextureView clearcoatTexture = 1;
+  optional TextureView clearcoatRoughnessTexture = 2;
+  optional TextureView clearcoatNormalTexture = 3;
+  optional float clearcoatFactor = 4 [default = 0];
+  optional float clearcoatRoughnessFactor = 5 [default = 0];
+}
+message Transmission {
+  optional TextureView transmissionTexture = 1;
+  optional float transmissionFactor = 2 [default = 0];
+}
+message Ior {
+  optional float ior = 1 [default = 0];
+}
+message Specular {
+  optional TextureView specularTexture = 1;
+  optional TextureView specularColorTexture = 2;
+  optional dmMath.Vector3One specularColorFactor = 3;
+  optional float specularFactor = 4 [default = 1];
+}
+message Volume {
+  optional TextureView thicknessTexture = 1;
+  optional float thicknessFactor = 2 [default = 0];
+  optional dmMath.Vector3One attenuationColor = 3;
+  optional float attenuationDistance = 4 [default = -1.0];
+}
+message Sheen {
+  optional TextureView sheenColorTexture = 1;
+  optional TextureView sheenRoughnessTexture = 2;
+  optional dmMath.Vector3 sheenColorFactor = 3;
+  optional float sheenRoughnessFactor = 4 [default = 0];
+}
+message EmissiveStrength {
+  optional float emissiveStrength = 1 [default = 1];
+}
+message Iridescence {
+  optional float iridescenceFactor = 1 [default = 0];
+  optional TextureView iridescenceTexture = 2;
+  optional float iridescenceIor = 3 [default = 1.3];
+  optional float iridescenceThicknessMin = 4 [default = 100.0];
+  optional float iridescenceThicknessMax = 5 [default = 400.0];
+  optional TextureView iridescenceThicknessTexture = 6;
+}
+message Material {
+  optional string name = 1;
+  optional uint32 index = 2;
+  optional bool isSkinned = 3;
+  optional PbrMetallicRoughness pbrMetallicRoughness = 4;
+  optional PbrSpecularGlossiness pbrSpecularGlossiness = 5;
+  optional Clearcoat clearcoat = 6;
+  optional Ior ior = 7;
+  optional Specular specular = 8;
+  optional Sheen sheen = 9;
+  optional Transmission transmission = 10;
+  optional Volume volume = 11;
+  optional EmissiveStrength emissiveStrength = 12;
+  optional Iridescence iridescence = 13;
+  optional TextureView normalTexture = 14;
+  optional TextureView occlusionTexture = 15;
+  optional TextureView emissiveTexture = 16;
+  optional dmMath.Vector3 emissiveFactor = 17;
+  optional float alphaCutoff = 18 [default = 0.5];
+  optional AlphaMode alphaMode = 19 [default = ALPHA_MODE_OPAQUE];
+  optional bool doubleSided = 20 [default = false];
+  optional bool unlit = 21 [default = false];
+  optional uint64 materialHash = 22;
+}
+message Bone {
+  required uint32 parent = 1;
+  required uint64 id = 2;
+  required string name = 3;
+  required dmMath.Transform local = 4 [(field_align) = true];
+  required dmMath.Transform world = 5 [(field_align) = true];
+  required dmMath.Transform inverse_bind_pose = 6 [(field_align) = true];
+  optional float length = 7 [default = 0];
+}
+message IK {
+  required uint64 id = 1;
+  required uint32 parent = 2;
+  required uint32 child = 3;
+  required uint32 target = 4;
+  optional bool positive = 5 [default = true];
+  optional float mix = 6 [default = 1.0];
+}
+message Skeleton {
+  repeated Bone bones = 1;
+  repeated IK iks = 2;
+}
+message AnimationTrack {
+  required uint64 bone_id = 1;
+  repeated float positions = 2;
+  repeated float rotations = 3;
+  repeated float scale = 4;
+}
+message EventKey {
+  required float t = 1;
+  optional int32 integer = 2 [default = 0];
+  optional float float = 3 [default = 0.0];
+  optional uint64 string = 4 [default = 0];
+}
+message EventTrack {
+  required uint64 event_id = 1;
+  repeated EventKey keys = 2;
+}
+message RigAnimation {
+  required uint64 id = 1;
+  required float duration = 2;
+  required float sample_rate = 3;
+  repeated AnimationTrack tracks = 4;
+  repeated EventTrack event_tracks = 5;
+}
+message AnimationSet {
+  repeated RigAnimation animations = 1;
+}
+message AnimationInstanceDesc {
+  required string animation = 1 [(resource) = true];
+}
+message AnimationSetDesc {
+  repeated AnimationInstanceDesc animations = 1;
+  optional string skeleton = 2;
+}
+enum IndexBufferFormat {
+  INDEXBUFFER_FORMAT_16 = 0;
+  INDEXBUFFER_FORMAT_32 = 1;
+}
+message Mesh {
+  required dmMath.Vector3 aabb_min = 1;
+  required dmMath.Vector3 aabb_max = 2;
+  repeated float positions = 3;
+  repeated float normals = 4;
+  repeated float tangents = 5;
+  repeated float colors = 6;
+  repeated float texcoord0 = 7;
+  optional uint32 num_texcoord0_components = 8;
+  repeated float texcoord1 = 9;
+  optional uint32 num_texcoord1_components = 10;
+  optional bytes indices = 11;
+  optional IndexBufferFormat indices_format = 12;
+  repeated float weights = 13;
+  repeated uint32 bone_indices = 14;
+  optional uint32 material_index = 15;
+}
+message Model {
+  required dmMath.Transform local = 1 [(field_align) = true];
+  required uint64 id = 2;
+  repeated Mesh meshes = 3;
+  optional uint64 bone_id = 4 [default = 0];
+}
+message MeshSet {
+  repeated Model models = 1;
+  repeated Material materials = 2;
+  repeated uint64 bone_list = 3;
+  optional uint32 max_bone_count = 4;
+}
+message RigScene {
+  optional string skeleton = 1 [(resource) = true];
+  optional string animation_set = 2 [(resource) = true];
+  required string mesh_set = 3 [(resource) = true];
+  optional string texture_set = 4 [(resource) = true];
+}
+enum Key {
+  KEY_SPACE = 0;
+  KEY_EXCLAIM = 1;
+  KEY_QUOTEDBL = 2;
+  KEY_HASH = 3;
+  KEY_DOLLAR = 4;
+  KEY_AMPERSAND = 5;
+  KEY_QUOTE = 6;
+  KEY_LPAREN = 7;
+  KEY_RPAREN = 8;
+  KEY_ASTERISK = 9;
+  KEY_PLUS = 10;
+  KEY_COMMA = 11;
+  KEY_MINUS = 12;
+  KEY_PERIOD = 13;
+  KEY_SLASH = 14;
+  KEY_0 = 15;
+  KEY_1 = 16;
+  KEY_2 = 17;
+  KEY_3 = 18;
+  KEY_4 = 19;
+  KEY_5 = 20;
+  KEY_6 = 21;
+  KEY_7 = 22;
+  KEY_8 = 23;
+  KEY_9 = 24;
+  KEY_COLON = 25;
+  KEY_SEMICOLON = 26;
+  KEY_LESS = 27;
+  KEY_EQUALS = 28;
+  KEY_GREATER = 29;
+  KEY_QUESTION = 30;
+  KEY_AT = 31;
+  KEY_A = 32;
+  KEY_B = 33;
+  KEY_C = 34;
+  KEY_D = 35;
+  KEY_E = 36;
+  KEY_F = 37;
+  KEY_G = 38;
+  KEY_H = 39;
+  KEY_I = 40;
+  KEY_J = 41;
+  KEY_K = 42;
+  KEY_L = 43;
+  KEY_M = 44;
+  KEY_N = 45;
+  KEY_O = 46;
+  KEY_P = 47;
+  KEY_Q = 48;
+  KEY_R = 49;
+  KEY_S = 50;
+  KEY_T = 51;
+  KEY_U = 52;
+  KEY_V = 53;
+  KEY_W = 54;
+  KEY_X = 55;
+  KEY_Y = 56;
+  KEY_Z = 57;
+  KEY_LBRACKET = 58;
+  KEY_BACKSLASH = 59;
+  KEY_RBRACKET = 60;
+  KEY_CARET = 61;
+  KEY_UNDERSCORE = 62;
+  KEY_BACKQUOTE = 63;
+  KEY_LBRACE = 64;
+  KEY_PIPE = 65;
+  KEY_RBRACE = 66;
+  KEY_TILDE = 67;
+  KEY_ESC = 68;
+  KEY_F1 = 69;
+  KEY_F2 = 70;
+  KEY_F3 = 71;
+  KEY_F4 = 72;
+  KEY_F5 = 73;
+  KEY_F6 = 74;
+  KEY_F7 = 75;
+  KEY_F8 = 76;
+  KEY_F9 = 77;
+  KEY_F10 = 78;
+  KEY_F11 = 79;
+  KEY_F12 = 80;
+  KEY_UP = 81;
+  KEY_DOWN = 82;
+  KEY_LEFT = 83;
+  KEY_RIGHT = 84;
+  KEY_LSHIFT = 85;
+  KEY_RSHIFT = 86;
+  KEY_LCTRL = 87;
+  KEY_RCTRL = 88;
+  KEY_LALT = 89;
+  KEY_RALT = 90;
+  KEY_TAB = 91;
+  KEY_ENTER = 92;
+  KEY_BACKSPACE = 93;
+  KEY_INSERT = 94;
+  KEY_DEL = 95;
+  KEY_PAGEUP = 96;
+  KEY_PAGEDOWN = 97;
+  KEY_HOME = 98;
+  KEY_END = 99;
+  KEY_KP_0 = 100;
+  KEY_KP_1 = 101;
+  KEY_KP_2 = 102;
+  KEY_KP_3 = 103;
+  KEY_KP_4 = 104;
+  KEY_KP_5 = 105;
+  KEY_KP_6 = 106;
+  KEY_KP_7 = 107;
+  KEY_KP_8 = 108;
+  KEY_KP_9 = 109;
+  KEY_KP_DIVIDE = 110;
+  KEY_KP_MULTIPLY = 111;
+  KEY_KP_SUBTRACT = 112;
+  KEY_KP_ADD = 113;
+  KEY_KP_DECIMAL = 114;
+  KEY_KP_EQUAL = 115;
+  KEY_KP_ENTER = 116;
+  KEY_KP_NUM_LOCK = 117;
+  KEY_CAPS_LOCK = 118;
+  KEY_SCROLL_LOCK = 119;
+  KEY_PAUSE = 120;
+  KEY_LSUPER = 121;
+  KEY_RSUPER = 122;
+  KEY_MENU = 123;
+  KEY_BACK = 124;
+  MAX_KEY_COUNT = 125;
+}
+enum Mouse {
+  MOUSE_WHEEL_UP = 0;
+  MOUSE_WHEEL_DOWN = 1;
+  MOUSE_BUTTON_LEFT = 2;
+  MOUSE_BUTTON_MIDDLE = 3;
+  MOUSE_BUTTON_RIGHT = 4;
+  MOUSE_BUTTON_1 = 5;
+  MOUSE_BUTTON_2 = 6;
+  MOUSE_BUTTON_3 = 7;
+  MOUSE_BUTTON_4 = 8;
+  MOUSE_BUTTON_5 = 9;
+  MOUSE_BUTTON_6 = 10;
+  MOUSE_BUTTON_7 = 11;
+  MOUSE_BUTTON_8 = 12;
+  MAX_MOUSE_COUNT = 13;
+}
+enum Gamepad {
+  GAMEPAD_LSTICK_LEFT = 0;
+  GAMEPAD_LSTICK_RIGHT = 1;
+  GAMEPAD_LSTICK_DOWN = 2;
+  GAMEPAD_LSTICK_UP = 3;
+  GAMEPAD_LSTICK_CLICK = 4;
+  GAMEPAD_LTRIGGER = 5;
+  GAMEPAD_LSHOULDER = 6;
+  GAMEPAD_LPAD_LEFT = 7;
+  GAMEPAD_LPAD_RIGHT = 8;
+  GAMEPAD_LPAD_DOWN = 9;
+  GAMEPAD_LPAD_UP = 10;
+  GAMEPAD_RSTICK_LEFT = 11;
+  GAMEPAD_RSTICK_RIGHT = 12;
+  GAMEPAD_RSTICK_DOWN = 13;
+  GAMEPAD_RSTICK_UP = 14;
+  GAMEPAD_RSTICK_CLICK = 15;
+  GAMEPAD_RTRIGGER = 16;
+  GAMEPAD_RSHOULDER = 17;
+  GAMEPAD_RPAD_LEFT = 18;
+  GAMEPAD_RPAD_RIGHT = 19;
+  GAMEPAD_RPAD_DOWN = 20;
+  GAMEPAD_RPAD_UP = 21;
+  GAMEPAD_START = 22;
+  GAMEPAD_BACK = 23;
+  GAMEPAD_GUIDE = 24;
+  GAMEPAD_CONNECTED = 25;
+  GAMEPAD_DISCONNECTED = 26;
+  GAMEPAD_RAW = 27;
+  MAX_GAMEPAD_COUNT = 28;
+}
+enum GamepadType {
+  GAMEPAD_TYPE_AXIS = 0;
+  GAMEPAD_TYPE_BUTTON = 1;
+  GAMEPAD_TYPE_HAT = 2;
+}
+enum GamepadModifier {
+  GAMEPAD_MODIFIER_NEGATE = 0;
+  GAMEPAD_MODIFIER_SCALE = 1;
+  GAMEPAD_MODIFIER_CLAMP = 2;
+  MAX_GAMEPAD_MODIFIER_COUNT = 3;
+}
+message GamepadModifier_t {
+  required GamepadModifier mod = 1;
+}
+message GamepadMapEntry {
+  required Gamepad input = 1;
+  required GamepadType type = 2;
+  required uint32 index = 3;
+  repeated GamepadModifier_t mod = 4;
+  optional uint32 hat_mask = 5;
+}
+message GamepadMap {
+  required string device = 1;
+  required string platform = 2;
+  required float dead_zone = 3;
+  repeated GamepadMapEntry map = 4;
+}
+message GamepadMaps {
+  repeated GamepadMap driver = 1;
+}
+enum Touch {
+  TOUCH_MULTI = 0;
+  MAX_TOUCH_COUNT = 1;
+}
+enum Text {
+  TEXT = 0;
+  MARKED_TEXT = 1;
+  MAX_TEXT_COUNT = 2;
+}
+message KeyTrigger {
+  required Key input = 1;
+  required string action = 2;
+}
+message MouseTrigger {
+  required Mouse input = 1;
+  required string action = 2;
+}
+message GamepadTrigger {
+  required Gamepad input = 1;
+  required string action = 2;
+}
+message TouchTrigger {
+  required Touch input = 1;
+  required string action = 2;
+}
+message TextTrigger {
+  required Text input = 1;
+  required string action = 2;
+}
+message InputBinding {
+  repeated KeyTrigger key_trigger = 1;
+  repeated MouseTrigger mouse_trigger = 2;
+  repeated GamepadTrigger gamepad_trigger = 3;
+  repeated TouchTrigger touch_trigger = 4;
+  repeated TextTrigger text_trigger = 5;
+}
+enum EmitterType {
+  EMITTER_TYPE_CIRCLE = 0;
+  EMITTER_TYPE_2DCONE = 1;
+  EMITTER_TYPE_BOX = 2;
+  EMITTER_TYPE_SPHERE = 3;
+  EMITTER_TYPE_CONE = 4;
+}
+enum PlayMode {
+  PLAY_MODE_ONCE = 0;
+  PLAY_MODE_LOOP = 1;
+}
+enum EmissionSpace {
+  EMISSION_SPACE_WORLD = 0;
+  EMISSION_SPACE_EMITTER = 1;
+}
+message SplinePoint {
+  optional float x = 1;
+  required float y = 2;
+  optional float t_x = 3 [default = 1.0];
+  optional float t_y = 4;
+}
+enum EmitterKey {
+  EMITTER_KEY_SPAWN_RATE = 0;
+  EMITTER_KEY_SIZE_X = 1;
+  EMITTER_KEY_SIZE_Y = 2;
+  EMITTER_KEY_SIZE_Z = 3;
+  EMITTER_KEY_PARTICLE_LIFE_TIME = 4;
+  EMITTER_KEY_PARTICLE_SPEED = 5;
+  EMITTER_KEY_PARTICLE_SIZE = 6;
+  EMITTER_KEY_PARTICLE_RED = 7;
+  EMITTER_KEY_PARTICLE_GREEN = 8;
+  EMITTER_KEY_PARTICLE_BLUE = 9;
+  EMITTER_KEY_PARTICLE_ALPHA = 10;
+  EMITTER_KEY_PARTICLE_ROTATION = 11;
+  EMITTER_KEY_PARTICLE_STRETCH_FACTOR_X = 12;
+  EMITTER_KEY_PARTICLE_STRETCH_FACTOR_Y = 13;
+  EMITTER_KEY_PARTICLE_ANGULAR_VELOCITY = 14;
+  EMITTER_KEY_COUNT = 15;
+}
+enum ParticleKey {
+  PARTICLE_KEY_SCALE = 0;
+  PARTICLE_KEY_RED = 1;
+  PARTICLE_KEY_GREEN = 2;
+  PARTICLE_KEY_BLUE = 3;
+  PARTICLE_KEY_ALPHA = 4;
+  PARTICLE_KEY_ROTATION = 5;
+  PARTICLE_KEY_STRETCH_FACTOR_X = 6;
+  PARTICLE_KEY_STRETCH_FACTOR_Y = 7;
+  PARTICLE_KEY_ANGULAR_VELOCITY = 8;
+  PARTICLE_KEY_COUNT = 9;
+}
+enum ModifierType {
+  MODIFIER_TYPE_ACCELERATION = 0;
+  MODIFIER_TYPE_DRAG = 1;
+  MODIFIER_TYPE_RADIAL = 2;
+  MODIFIER_TYPE_VORTEX = 3;
+}
+enum ModifierKey {
+  MODIFIER_KEY_MAGNITUDE = 0;
+  MODIFIER_KEY_MAX_DISTANCE = 1;
+  MODIFIER_KEY_COUNT = 2;
+}
+message Modifier {
+  required ModifierType type = 1;
+  optional uint32 use_direction = 2 [default = 0];
+  optional dmMath.Point3 position = 3;
+  optional dmMath.Quat rotation = 4;
+  repeated Property properties = 5;
+}
+enum BlendMode {
+  BLEND_MODE_ALPHA = 0;
+  BLEND_MODE_ADD = 1;
+  BLEND_MODE_ADD_ALPHA = 2;
+  BLEND_MODE_MULT = 3;
+  BLEND_MODE_SCREEN = 4;
+}
+enum SizeMode {
+  SIZE_MODE_MANUAL = 0;
+  SIZE_MODE_AUTO = 1;
+}
+enum ParticleOrientation {
+  PARTICLE_ORIENTATION_DEFAULT = 0;
+  PARTICLE_ORIENTATION_INITIAL_DIRECTION = 1;
+  PARTICLE_ORIENTATION_MOVEMENT_DIRECTION = 2;
+  PARTICLE_ORIENTATION_ANGULAR_VELOCITY = 3;
+}
+message Emitter {
+  optional string id = 1 [default = "emitter"];
+  required PlayMode mode = 2;
+  optional float duration = 3 [default = 0];
+  required EmissionSpace space = 4;
+  optional dmMath.Point3 position = 5;
+  optional dmMath.Quat rotation = 6;
+  required string tile_source = 7 [(resource) = true];
+  required string animation = 8;
+  required string material = 9 [(resource) = true];
+  optional BlendMode blend_mode = 10 [default = BLEND_MODE_ALPHA];
+  optional ParticleOrientation particle_orientation = 11 [default = PARTICLE_ORIENTATION_DEFAULT];
+  optional float inherit_velocity = 12 [default = 0.0];
+  required uint32 max_particle_count = 13;
+  required EmitterType type = 14;
+  optional float start_delay = 15 [default = 0.0];
+  repeated Property properties = 16;
+  repeated ParticleProperty particle_properties = 17;
+  repeated Modifier modifiers = 18;
+  optional SizeMode size_mode = 19 [default = SIZE_MODE_MANUAL];
+  optional float start_delay_spread = 20 [default = 0.0];
+  optional float duration_spread = 21 [default = 0.0];
+  optional bool stretch_with_velocity = 22 [default = false];
+  optional float start_offset = 23 [default = 0.0];
+  optional dmMath.Point3 pivot = 24;
+  repeated dmGraphics.VertexAttribute attributes = 25;
+}
+message ParticleFX {
+  repeated Emitter emitters = 1;
+  repeated Modifier modifiers = 2;
+}
+message MaterialDesc {
+  required string name = 1;
+  repeated string tags = 2;
+  required string vertex_program = 3 [(resource) = true];
+  required string fragment_program = 4 [(resource) = true];
+  optional VertexSpace vertex_space = 5;
+  repeated Constant vertex_constants = 6;
+  repeated Constant fragment_constants = 7;
+  repeated string textures = 8;
+  repeated Sampler samplers = 9;
+  optional uint32 max_page_count = 10 [default = 0];
+  repeated dmGraphics.VertexAttribute attributes = 11;
+  optional string program = 12 [(resource) = true, (runtime_only) = true];
+  optional PbrParameters pbr_parameters = 13 [(runtime_only) = true];
+}
+enum FontTextureFormat {
+  TYPE_BITMAP = 0;
+  TYPE_DISTANCE_FIELD = 1;
+}
+enum FontRenderMode {
+  MODE_SINGLE_LAYER = 0;
+  MODE_MULTI_LAYER = 1;
+}
+message FontDesc {
+  required string font = 1 [(resource) = true];
+  required string material = 2 [(resource) = true];
+  required uint32 size = 3;
+  optional uint32 antialias = 4 [default = 1];
+  optional float alpha = 5 [default = 1.0];
+  optional float outline_alpha = 6 [default = 0.0];
+  optional float outline_width = 7 [default = 0.0];
+  optional float shadow_alpha = 8 [default = 0.0];
+  optional uint32 shadow_blur = 9 [default = 0];
+  optional float shadow_x = 10 [default = 0.0];
+  optional float shadow_y = 11 [default = 0.0];
+  optional string extra_characters = 12 [default = ""];
+  optional FontTextureFormat output_format = 13 [default = TYPE_BITMAP];
+  optional bool all_chars = 14 [default = false];
+  optional uint32 cache_width = 15 [default = 0];
+  optional uint32 cache_height = 16 [default = 0];
+  optional FontRenderMode render_mode = 17 [default = MODE_SINGLE_LAYER];
+  optional string characters = 18 [default = ""];
+}
+message GlyphBank {
+  repeated Glyph glyphs = 1;
+  optional uint64 glyph_padding = 2 [default = 0];
+  optional uint32 glyph_channels = 3 [default = 0];
+  optional bytes glyph_data = 4;
+  optional float max_ascent = 5 [default = 0.0];
+  optional float max_descent = 6 [default = 0.0];
+  optional float max_advance = 7 [default = 0.0];
+  optional float max_width = 8 [default = 0.0];
+  optional float max_height = 9 [default = 0.0];
+  optional FontTextureFormat image_format = 10 [default = TYPE_BITMAP];
+  optional float sdf_spread = 11 [default = 1.0];
+  optional float sdf_outline = 12 [default = 0.0];
+  optional float sdf_shadow = 13 [default = 0.0];
+  optional uint32 cache_width = 14 [default = 0];
+  optional uint32 cache_height = 15 [default = 0];
+  optional uint32 cache_cell_width = 16 [default = 0];
+  optional uint32 cache_cell_height = 17 [default = 0];
+  optional uint32 cache_cell_max_ascent = 18 [default = 0];
+  optional uint32 padding = 19 [default = 0];
+  optional bool is_monospaced = 20 [default = false];
+}
+message FontMap {
+  optional string material = 1 [default = "", (resource) = true];
+  optional string glyph_bank = 2 [default = "", (resource) = true];
+  optional string font = 3 [default = "", (resource) = true];
+  optional uint32 size = 4 [default = 0];
+  optional uint32 antialias = 5 [default = 1];
+  optional float shadow_x = 6 [default = 0.0];
+  optional float shadow_y = 7 [default = 0.0];
+  optional uint32 shadow_blur = 8 [default = 0];
+  optional float shadow_alpha = 9 [default = 1.0];
+  optional float alpha = 10 [default = 1.0];
+  optional float outline_alpha = 11 [default = 1.0];
+  optional float outline_width = 12 [default = 0.0];
+  optional uint32 layer_mask = 13 [default = 1];
+  optional FontTextureFormat output_format = 14 [default = TYPE_BITMAP];
+  optional FontRenderMode render_mode = 15 [default = MODE_SINGLE_LAYER];
+  optional bool all_chars = 16 [default = false];
+  optional string characters = 17 [default = ""];
+  optional uint32 cache_width = 18 [default = 0];
+  optional uint32 cache_height = 19 [default = 0];
+  optional float sdf_spread = 20 [default = 1.0];
+  optional float sdf_outline = 21 [default = 0.0];
+  optional float sdf_shadow = 22 [default = 0.0];
+  optional uint32 padding = 23 [default = 0];
+}
+message RenderPrototypeDesc {
+  required string script = 1 [(resource) = true];
+  repeated MaterialDesc materials = 2;
+  repeated RenderResourceDesc render_resources = 3;
+}
+message DrawText {
+  required dmMath.Point3 position = 1;
+  required string text = 2;
+}
+message DrawDebugText {
+  required dmMath.Point3 position = 1;
+  required string text = 2;
+  required dmMath.Vector4 color = 3;
+}
+message DrawLine {
+  required dmMath.Point3 start_point = 1;
+  required dmMath.Point3 end_point = 2;
+  required dmMath.Vector4 color = 3;
+}
+message WindowResized {
+  required uint32 width = 1;
+  required uint32 height = 2;
+}
+message Resize {
+  required uint32 width = 1;
+  required uint32 height = 2;
+}
+message ClearColor {
+  required dmMath.Vector4 color = 1;
+}
+message DisplayProfileQualifier {
+  required uint32 width = 1;
+  required uint32 height = 2;
+  repeated string device_models = 3;
+}
+message DisplayProfile {
+  required string name = 1;
+  repeated DisplayProfileQualifier qualifiers = 2;
+}
+message DisplayProfiles {
+  repeated DisplayProfile profiles = 1;
+  optional bool auto_layout_selection = 2 [default = true];
+}
+message LuaRef {
+  required int32 ref = 1 [default = 0];
+  required int32 context_table_ref = 2 [default = 0];
+}
+message Exit {
+  required int32 code = 1;
+}
+message ToggleProfile {
+}
+message TogglePhysicsDebug {
+}
+message StartRecord {
+  required string file_name = 1;
+  optional int32 frame_period = 2 [default = 2];
+  optional int32 fps = 3 [default = 30];
+}
+message StopRecord {
+}
+message Reboot {
+  optional string arg1 = 1;
+  optional string arg2 = 2;
+  optional string arg3 = 3;
+  optional string arg4 = 4;
+  optional string arg5 = 5;
+  optional string arg6 = 6;
+}
+message SetVsync {
+  required int32 swap_interval = 1 [default = 1];
+}
+message SetUpdateFrequency {
+  required int32 frequency = 1;
+}
+message ResumeRendering {
+}
+message LuaSource {
+  optional bytes script = 1;
+  required string filename = 2;
+  optional bytes bytecode = 3;
+  optional bytes delta = 5;
+  optional bytes bytecode_32 = 6;
+  optional bytes bytecode_64 = 4;
+}
+message HideApp {
+}
+message RunScript {
+  required dmLuaDDF.LuaModule module = 1;
+}
+message TextureSetAnimation {
+  required string id = 1;
+  required uint32 width = 2;
+  required uint32 height = 3;
+  required uint32 start = 4;
+  required uint32 end = 5;
+  optional uint32 fps = 6 [default = 30];
+  optional Playback playback = 7 [default = PLAYBACK_ONCE_FORWARD];
+  optional uint32 flip_horizontal = 8 [default = 0];
+  optional uint32 flip_vertical = 9 [default = 0];
+}
+message SpriteGeometry {
+  required uint32 width = 1;
+  required uint32 height = 2;
+  required float center_x = 3;
+  required float center_y = 4;
+  required bool rotated = 5;
+  required SpriteTrimmingMode trim_mode = 6 [default = SPRITE_TRIM_MODE_OFF];
+  repeated float vertices = 7;
+  repeated float uvs = 8;
+  repeated uint32 indices = 9;
+  optional float pivot_x = 10 [default = 0];
+  optional float pivot_y = 11 [default = 0];
+}
+message TextureSet {
+  required string texture = 1 [(resource) = true];
+  required uint32 width = 2;
+  required uint32 height = 3;
+  optional uint64 texture_hash = 4;
+  repeated TextureSetAnimation animations = 5;
+  optional uint32 tile_width = 6;
+  optional uint32 tile_height = 7;
+  optional uint32 tile_count = 8;
+  repeated float collision_hull_points = 9;
+  repeated string collision_groups = 10;
+  repeated ConvexHull convex_hulls = 11;
+  repeated uint64 image_name_hashes = 12;
+  repeated uint32 frame_indices = 13;
+  required bytes tex_coords = 14;
+  optional bytes tex_dims = 15;
+  repeated SpriteGeometry geometries = 16;
+  optional uint32 use_geometries = 17;
+  repeated uint32 page_indices = 18;
+  optional uint32 page_count = 19 [default = 0];
+}
+message Texture {
+  required string sampler = 1;
+  required string texture = 2 [(resource) = true];
+}
+message Material {
+  required string name = 1;
+  required string material = 2 [(resource) = true];
+  repeated Texture textures = 3;
+  repeated dmGraphics.VertexAttribute attributes = 4;
+}
+message ModelDesc {
+  required string mesh = 2 [(resource) = true];
+  optional string material = 3 [(resource) = true];
+  repeated string textures = 4 [(resource) = true];
+  optional string skeleton = 5 [(resource) = true];
+  optional string animations = 6 [(resource) = true];
+  optional string default_animation = 7;
+  optional string name = 10;
+  repeated Material materials = 11;
+  optional bool create_go_bones = 12 [default = true];
+}
+message Model {
+  required string rig_scene = 1 [(resource) = true];
+  optional string default_animation = 2;
+  repeated Material materials = 3;
+  optional bool create_go_bones = 4;
+}
+message ResetConstant {
+  required uint64 name_hash = 1;
+}
+message SetTexture {
+  required uint64 texture_hash = 1;
+  required uint32 texture_unit = 2;
+}
+message ModelPlayAnimation {
+  required uint64 animation_id = 1;
+  required uint32 playback = 2;
+  optional float blend_duration = 3 [default = 0.0];
+  optional float offset = 4 [default = 0.0];
+  optional float playback_rate = 5 [default = 1.0];
+}
+message ModelCancelAnimation {
+}
+message ModelAnimationDone {
+  required uint64 animation_id = 1;
+  required uint32 playback = 2;
+}
+message ConvexHull {
+  required uint32 index = 1 [default = 0];
+  required uint32 count = 2 [default = 0];
+  required string collision_group = 3 [default = "tile"];
+}
+message Cue {
+  required string id = 1;
+  required uint32 frame = 2;
+  optional float value = 3 [default = 0.0];
+}
+enum Playback {
+  PLAYBACK_NONE = 0;
+  PLAYBACK_ONCE_FORWARD = 1;
+  PLAYBACK_ONCE_BACKWARD = 2;
+  PLAYBACK_ONCE_PINGPONG = 6;
+  PLAYBACK_LOOP_FORWARD = 3;
+  PLAYBACK_LOOP_BACKWARD = 4;
+  PLAYBACK_LOOP_PINGPONG = 5;
+}
+enum SpriteTrimmingMode {
+  SPRITE_TRIM_MODE_OFF = 0;
+  SPRITE_TRIM_MODE_4 = 4;
+  SPRITE_TRIM_MODE_5 = 5;
+  SPRITE_TRIM_MODE_6 = 6;
+  SPRITE_TRIM_MODE_7 = 7;
+  SPRITE_TRIM_MODE_8 = 8;
+  SPRITE_TRIM_POLYGONS = 9;
+}
+message Animation {
+  required string id = 1;
+  required uint32 start_tile = 2;
+  required uint32 end_tile = 3;
+  optional Playback playback = 4 [default = PLAYBACK_ONCE_FORWARD];
+  optional uint32 fps = 5 [default = 30];
+  optional uint32 flip_horizontal = 6 [default = 0];
+  optional uint32 flip_vertical = 7 [default = 0];
+  repeated Cue cues = 8;
+}
+message TileSet {
+  required string image = 1 [(resource) = true];
+  required uint32 tile_width = 2 [default = 0];
+  required uint32 tile_height = 3 [default = 0];
+  optional uint32 tile_margin = 4 [default = 0];
+  optional uint32 tile_spacing = 5 [default = 0];
+  optional string collision = 6 [(resource) = true];
+  optional string material_tag = 7 [default = "tile"];
+  repeated ConvexHull convex_hulls = 8;
+  repeated float convex_hull_points = 9 [(runtime_only) = true];
+  repeated string collision_groups = 10;
+  repeated Animation animations = 11;
+  optional uint32 extrude_borders = 12 [default = 0];
+  optional uint32 inner_padding = 13 [default = 0];
+  optional SpriteTrimmingMode sprite_trim_mode = 14 [default = SPRITE_TRIM_MODE_OFF];
+}
+message TileCell {
+  required int32 x = 1 [default = 0];
+  required int32 y = 2 [default = 0];
+  required uint32 tile = 3 [default = 0];
+  optional uint32 h_flip = 4 [default = 0];
+  optional uint32 v_flip = 5 [default = 0];
+  optional uint32 rotate90 = 6 [default = 0];
+}
+message TileLayer {
+  required string id = 1 [default = "layer1"];
+  required float z = 2 [default = 0.0];
+  optional uint32 is_visible = 3 [default = 1];
+  optional uint64 id_hash = 4 [default = 0, (runtime_only) = true];
+  repeated TileCell cell = 6;
+}
+message TileGrid {
+  required string tile_set = 1 [(resource) = true];
+  repeated TileLayer layers = 2;
+  optional string material = 3 [(resource) = true, default = "/builtins/materials/tile_map.material"];
+  optional BlendMode blend_mode = 4 [default = BLEND_MODE_ALPHA];
+}
+message SetConstantTileMap {
+  required uint64 name_hash = 1;
+  required dmMath.Vector4 value = 2 [(field_align) = true];
+}
+message ResetConstantTileMap {
+  required uint64 name_hash = 1;
+}
+message SpriteTexture {
+  required string sampler = 1;
+  required string texture = 2 [(resource) = true];
+}
+message SpriteDesc {
+  optional string tile_set = 1 [(resource) = true];
+  required string default_animation = 2;
+  optional string material = 3 [(resource) = true, default = "/builtins/materials/sprite.material"];
+  optional BlendMode blend_mode = 4 [default = BLEND_MODE_ALPHA];
+  optional dmMath.Vector4 slice9 = 5;
+  optional dmMath.Vector4 size = 6;
+  optional SizeMode size_mode = 7 [default = SIZE_MODE_AUTO];
+  optional float offset = 8 [default = 0.0];
+  optional float playback_rate = 9 [default = 1.0];
+  repeated dmGraphics.VertexAttribute attributes = 10;
+  repeated SpriteTexture textures = 11;
+}
+message PlayAnimation {
+  required uint64 id = 1;
+  optional float offset = 2 [default = 0.0];
+  optional float playback_rate = 3 [default = 1.0];
+}
+message AnimationDone {
+  required uint32 current_tile = 1;
+  required uint64 id = 2;
+}
+message SetFlipHorizontal {
+  required uint32 flip = 1;
+}
+message SetFlipVertical {
+  required uint32 flip = 1;
+}
+message SoundDesc {
+  required string sound = 1 [(resource) = true];
+  optional int32 looping = 2 [default = 0];
+  optional string group = 3 [default = "master"];
+  optional float gain = 4 [default = 1.0];
+  optional float pan = 5 [default = 0.0];
+  optional float speed = 6 [default = 1.0];
+  optional int32 loopcount = 7 [default = 0];
+}
+message ConvexShape {
+  required Type shape_type = 1;
+  repeated float data = 2;
+}
+message CollisionShape {
+  repeated Shape shapes = 1;
+  repeated float data = 2;
+}
+enum CollisionObjectType {
+  COLLISION_OBJECT_TYPE_DYNAMIC = 0;
+  COLLISION_OBJECT_TYPE_KINEMATIC = 1;
+  COLLISION_OBJECT_TYPE_STATIC = 2;
+  COLLISION_OBJECT_TYPE_TRIGGER = 3;
+}
+message CollisionObjectDesc {
+  optional string collision_shape = 1 [(resource) = true];
+  required CollisionObjectType type = 2;
+  required float mass = 3;
+  required float friction = 4;
+  required float restitution = 5;
+  required string group = 6;
+  repeated string mask = 7;
+  optional CollisionShape embedded_collision_shape = 8;
+  optional float linear_damping = 9 [default = 0];
+  optional float angular_damping = 10 [default = 0];
+  optional bool locked_rotation = 11 [default = false];
+  optional bool bullet = 12 [default = false];
+  optional bool event_collision = 13 [default = true];
+  optional bool event_contact = 14 [default = true];
+  optional bool event_trigger = 15 [default = true];
+}
+message ApplyForce {
+  required dmMath.Vector3 force = 1;
+  required dmMath.Point3 position = 2;
+}
+message CollisionResponse {
+  required uint64 other_id = 1;
+  required uint64 group = 2;
+  required dmMath.Point3 other_position = 3;
+  required uint64 other_group = 4;
+  required uint64 own_group = 5;
+}
+message ContactPointResponse {
+  required dmMath.Point3 position = 1;
+  required dmMath.Vector3 normal = 2;
+  required dmMath.Vector3 relative_velocity = 3;
+  required float distance = 4;
+  required float applied_impulse = 5;
+  required float life_time = 6;
+  required float mass = 7;
+  required float other_mass = 8;
+  required uint64 other_id = 9;
+  required dmMath.Point3 other_position = 10;
+  required uint64 group = 11;
+  required uint64 other_group = 12;
+  required uint64 own_group = 13;
+}
+message TriggerResponse {
+  required uint64 other_id = 1;
+  required bool enter = 2;
+  required uint64 group = 3;
+  required uint64 other_group = 4;
+  required uint64 own_group = 5;
+}
+message RequestRayCast {
+  required dmMath.Point3 from = 1;
+  required dmMath.Point3 to = 2;
+  required uint32 mask = 3;
+  required uint32 request_id = 4;
+}
+message RayCastResponse {
+  required float fraction = 1;
+  required dmMath.Point3 position = 2;
+  required dmMath.Vector3 normal = 3;
+  required uint64 id = 4;
+  required uint64 group = 5;
+  required uint32 request_id = 6;
+}
+message RayCastMissed {
+  required uint32 request_id = 1;
+}
+message RequestVelocity {
+}
+message VelocityResponse {
+  required dmMath.Vector3 linear_velocity = 1;
+  required dmMath.Vector3 angular_velocity = 2;
+}
+message SetGridShapeHull {
+  required uint32 shape = 1;
+  required uint32 row = 2;
+  required uint32 column = 3;
+  required uint32 hull = 4;
+  required uint32 flip_horizontal = 5;
+  required uint32 flip_vertical = 6;
+  required uint32 rotate90 = 7;
+}
+message EnableGridShapeLayer {
+  required uint32 shape = 1;
+  required uint32 enable = 2;
+}
+message ContactPoint {
+  required dmMath.Point3 position = 1;
+  required dmMath.Point3 instance_position = 2;
+  required dmMath.Vector3 normal = 3;
+  required dmMath.Vector3 relative_velocity = 4;
+  required float mass = 5;
+  required uint64 id = 6;
+  required uint64 group = 7;
+}
+message ContactPointEvent {
+  required ContactPoint a = 1;
+  required ContactPoint b = 2;
+  required float distance = 3;
+  required float applied_impulse = 4;
+}
+message Collision {
+  required dmMath.Point3 position = 1;
+  required uint64 id = 2;
+  required uint64 group = 3;
+}
+message CollisionEvent {
+  required Collision a = 1;
+  required Collision b = 2;
+}
+message Trigger {
+  required uint64 id = 1;
+  required uint64 group = 2;
+}
+message TriggerEvent {
+  required bool enter = 1;
+  required Trigger a = 2;
+  required Trigger b = 3;
+}
+message NodeDesc {
+  optional dmMath.Vector4 position = 1;
+  optional dmMath.Vector4 rotation = 2;
+  optional dmMath.Vector4One scale = 3;
+  optional dmMath.Vector4 size = 4;
+  optional dmMath.Vector4One color = 5;
+  optional Type type = 6;
+  optional BlendMode blend_mode = 7 [default = BLEND_MODE_ALPHA];
+  optional string text = 8;
+  optional string texture = 9;
+  optional string font = 10;
+  optional string id = 11;
+  optional XAnchor xanchor = 12 [default = XANCHOR_NONE];
+  optional YAnchor yanchor = 13 [default = YANCHOR_NONE];
+  optional Pivot pivot = 14 [default = PIVOT_CENTER];
+  optional dmMath.Vector4WOne outline = 15;
+  optional dmMath.Vector4WOne shadow = 16;
+  optional AdjustMode adjust_mode = 17 [default = ADJUST_MODE_FIT];
+  optional bool line_break = 18 [default = false];
+  optional string parent = 19;
+  optional string layer = 20;
+  optional bool inherit_alpha = 21 [default = false];
+  optional dmMath.Vector4 slice9 = 22;
+  optional PieBounds outerBounds = 23 [default = PIEBOUNDS_ELLIPSE];
+  optional float innerRadius = 24 [default = 0];
+  optional int32 perimeterVertices = 25 [default = 32];
+  optional float pieFillAngle = 26 [default = 360];
+  optional ClippingMode clipping_mode = 27 [default = CLIPPING_MODE_NONE];
+  optional bool clipping_visible = 28 [default = true];
+  optional bool clipping_inverted = 29 [default = false];
+  optional float alpha = 30 [default = 1.0];
+  optional float outline_alpha = 31 [default = 1.0];
+  optional float shadow_alpha = 32 [default = 1.0];
+  repeated uint32 overridden_fields = 33;
+  optional string template = 34 [(resource) = true];
+  optional bool template_node_child = 35;
+  optional float text_leading = 36 [default = 1.0];
+  optional float text_tracking = 37 [default = 0.0];
+  optional SizeMode size_mode = 38 [default = SIZE_MODE_MANUAL];
+  optional string spine_scene = 39;
+  optional string spine_default_animation = 40;
+  optional string spine_skin = 41;
+  optional bool spine_node_child = 42 [default = false];
+  optional string particlefx = 43;
+  optional uint32 custom_type = 44 [default = 0];
+  optional bool enabled = 45 [default = true];
+  optional bool visible = 46 [default = true];
+  optional string material = 47;
+}
+message SceneDesc {
+  optional string script = 1 [(resource) = true];
+  repeated FontDesc fonts = 2;
+  repeated TextureDesc textures = 3;
+  optional dmMath.Vector4 background_color = 4;
+  repeated NodeDesc nodes = 6;
+  repeated LayerDesc layers = 7;
+  optional string material = 8 [(resource) = true, default = "/builtins/materials/gui.material"];
+  repeated LayoutDesc layouts = 9;
+  optional AdjustReference adjust_reference = 10 [default = ADJUST_REFERENCE_LEGACY];
+  optional uint32 max_nodes = 11 [default = 512];
+  repeated SpineSceneDesc spine_scenes = 12;
+  repeated ParticleFXDesc particlefxs = 13;
+  repeated ResourceDesc resources = 14;
+  repeated MaterialDesc materials = 15;
+  optional uint32 max_dynamic_textures = 16 [default = 128];
+}
+message LayoutChanged {
+  required uint64 id = 1;
+  required uint64 previous_id = 2;
+}
+enum ValueType {
+  VALUE_TYPE_UINT8 = 0;
+  VALUE_TYPE_UINT16 = 1;
+  VALUE_TYPE_UINT32 = 2;
+  VALUE_TYPE_UINT64 = 3;
+  VALUE_TYPE_INT8 = 4;
+  VALUE_TYPE_INT16 = 5;
+  VALUE_TYPE_INT32 = 6;
+  VALUE_TYPE_INT64 = 7;
+  VALUE_TYPE_FLOAT32 = 8;
+}
+message StreamDesc {
+  required string name = 1;
+  required ValueType value_type = 2;
+  required uint32 value_count = 3;
+  repeated uint32 ui = 4;
+  repeated int32 i = 5;
+  repeated uint64 ui64 = 6;
+  repeated int64 i64 = 7;
+  repeated float f = 8;
+  required uint64 name_hash = 9;
+}
+message BufferDesc {
+  repeated StreamDesc streams = 1;
+}
+message MeshDesc {
+  required string material = 1 [(resource) = true];
+  required string vertices = 2 [(resource) = true];
+  repeated string textures = 3 [(resource) = true];
+  optional PrimitiveType primitive_type = 4 [default = PRIMITIVE_TRIANGLES];
+  optional string position_stream = 5;
+  optional string normal_stream = 6;
+}
+message FactoryDesc {
+  required string prototype = 1 [(resource) = true];
+  optional bool load_dynamically = 2 [default = false];
+  optional bool dynamic_prototype = 3 [default = false];
+}
+message CollectionFactoryDesc {
+  required string prototype = 1 [(resource) = true];
+  optional bool load_dynamically = 2 [default = false];
+  optional bool dynamic_prototype = 3 [default = false];
+}
+message Create {
+  required dmMath.Point3 position = 1 [(field_align) = true];
+  required dmMath.Quat rotation = 2 [(field_align) = true];
+  optional uint64 id = 3 [default = 0];
+  optional float scale = 4 [default = 1];
+  optional dmMath.Vector3 scale3 = 5 [(field_align) = true];
+}
+message CollectionProxyDesc {
+  required string collection = 1 [(resource) = true];
+  optional bool exclude = 2 [default = false];
+}
+enum TimeStepMode {
+  TIME_STEP_MODE_CONTINUOUS = 0;
+  TIME_STEP_MODE_DISCRETE = 1;
+}
+message SetTimeStep {
+  required float factor = 1;
+  required TimeStepMode mode = 2;
+}
+enum LightType {
+  POINT = 0;
+  SPOT = 1;
+}
+message LightDesc {
+  required string id = 1;
+  required LightType type = 2;
+  required float intensity = 3;
+  required dmMath.Vector3 color = 4;
+  required float range = 5;
+  required float decay = 6;
+  optional float cone_angle = 7;
+  optional float penumbra_angle = 8;
+  optional float drop_off = 9;
+}
+message SetLight {
+  required dmMath.Point3 position = 1;
+  required dmMath.Quat rotation = 2;
+  required LightDesc light = 3;
+}
+message SetViewProjection {
+  required uint64 id = 1;
+  required dmMath.Matrix4 view = 2;
+  required dmMath.Matrix4 projection = 3;
+}
+message PlaySound {
+  optional float delay = 1 [default = 0.0];
+  optional float gain = 2 [default = 1.0];
+  optional float pan = 3 [default = 0.0];
+  optional float speed = 4 [default = 1.0];
+  optional uint32 play_id = 5 [default = 4294967295];
+  optional float start_time = 6 [default = 0.0];
+  optional uint32 start_frame = 7 [default = 0];
+}
+message StopSound {
+  optional uint32 play_id = 1 [default = 4294967295];
+}
+message PauseSound {
+  optional bool pause = 1 [default = true];
+}
+message SoundEvent {
+  optional int32 play_id = 1 [default = 0];
+}
+message SetGain {
+  optional float gain = 1 [default = 1.0];
+}
+message SetPan {
+  optional float pan = 1 [default = 0.0];
+}
+message SetSpeed {
+  optional float speed = 1 [default = 1.0];
+}
+message PlayParticleFX {
+}
+message StopParticleFX {
+  optional bool clear_particles = 1 [default = false];
+}
+message SetConstantParticleFX {
+  required uint64 emitter_id = 1;
+  required uint64 name_hash = 2;
+  required dmMath.Matrix4 value = 3 [(field_align) = true];
+  optional bool is_matrix4 = 4;
+}
+message ResetConstantParticleFX {
+  required uint64 emitter_id = 1;
+  required uint64 name_hash = 2;
+}
+message SetConstant {
+  required uint64 name_hash = 1;
+  required dmMath.Vector4 value = 2 [(field_align) = true];
+  optional int32 index = 3 [default = 0];
+}
+message ResetConstant {
+  required uint64 name_hash = 1;
+}
+message SetScale {
+  required dmMath.Vector3 scale = 1 [(field_align) = true];
+}
+enum OrthoZoomMode {
+  ORTHO_MODE_FIXED = 0;
+  ORTHO_MODE_AUTO_FIT = 1;
+  ORTHO_MODE_AUTO_COVER = 2;
+}
+message CameraDesc {
+  required float aspect_ratio = 1;
+  required float fov = 2;
+  required float near_z = 3;
+  required float far_z = 4;
+  optional uint32 auto_aspect_ratio = 5 [default = 0];
+  optional uint32 orthographic_projection = 6 [default = 0];
+  optional float orthographic_zoom = 7 [default = 1.0];
+  optional OrthoZoomMode orthographic_mode = 8 [default = ORTHO_MODE_FIXED];
+}
+message SetCamera {
+  required float aspect_ratio = 1;
+  required float fov = 2;
+  required float near_z = 3;
+  required float far_z = 4;
+  optional uint32 orthographic_projection = 5 [default = 0];
+  optional float orthographic_zoom = 6 [default = 1.0];
+  optional OrthoZoomMode orthographic_mode = 7 [default = ORTHO_MODE_FIXED];
+}
+message AcquireCameraFocus {
+}
+message ReleaseCameraFocus {
+}
+message LabelDesc {
+  required dmMath.Vector4 size = 1;
+  optional dmMath.Vector4One scale = 2;
+  optional dmMath.Vector4One color = 3;
+  optional dmMath.Vector4WOne outline = 4;
+  optional dmMath.Vector4WOne shadow = 5;
+  optional float leading = 6 [default = 1.0];
+  optional float tracking = 7;
+  optional Pivot pivot = 8 [default = PIVOT_CENTER];
+  optional BlendMode blend_mode = 9 [default = BLEND_MODE_ALPHA];
+  optional bool line_break = 10 [default = false];
+  optional string text = 11;
+  required string font = 12 [(resource) = true];
+  required string material = 13 [(resource) = true];
+}
+message SetText {
+  required string text = 1;
+}
+message AtlasImage {
+  required string image = 1 [(resource) = true];
+  optional SpriteTrimmingMode sprite_trim_mode = 2 [default = SPRITE_TRIM_MODE_OFF];
+  optional float pivot_x = 3 [default = 0.5];
+  optional float pivot_y = 4 [default = 0.5];
+}
+message AtlasAnimation {
+  required string id = 1;
+  repeated AtlasImage images = 2;
+  optional Playback playback = 3 [default = PLAYBACK_ONCE_FORWARD];
+  optional uint32 fps = 4 [default = 30];
+  optional uint32 flip_horizontal = 5 [default = 0];
+  optional uint32 flip_vertical = 6 [default = 0];
+}
+message Atlas {
+  repeated AtlasImage images = 1;
+  repeated AtlasAnimation animations = 2;
+  optional uint32 margin = 3 [default = 0];
+  optional uint32 extrude_borders = 4 [default = 0];
+  optional uint32 inner_padding = 5 [default = 0];
+  optional uint32 max_page_width = 6 [default = 0];
+  optional uint32 max_page_height = 7 [default = 0];
+  optional string rename_patterns = 8;
+}
+message Cubemap {
+  required string right = 1 [(resource) = true];
+  required string left = 2 [(resource) = true];
+  required string top = 3 [(resource) = true];
+  required string bottom = 4 [(resource) = true];
+  required string front = 5 [(resource) = true];
+  required string back = 6 [(resource) = true];
+}
+enum CoordinateSpace {
+  COORDINATE_SPACE_DEFAULT = 0;
+  COORDINATE_SPACE_WORLD = 1;
+  COORDINATE_SPACE_LOCAL = 2;
+}
+enum VertexStepFunction {
+  VERTEX_STEP_FUNCTION_VERTEX = 0;
+  VERTEX_STEP_FUNCTION_INSTANCE = 1;
+}
+message VertexAttribute {
+  required string name = 1;
+  optional uint64 name_hash = 2 [(runtime_only) = true];
+  optional SemanticType semantic_type = 3 [default = SEMANTIC_TYPE_NONE];
+  optional int32 element_count = 4 [default = 0];
+  optional bool normalize = 5 [default = false];
+  optional DataType data_type = 6 [default = TYPE_FLOAT];
+  optional CoordinateSpace coordinate_space = 7 [default = COORDINATE_SPACE_LOCAL];
+  optional VertexStepFunction step_function = 11 [default = VERTEX_STEP_FUNCTION_VERTEX];
+  optional VectorType vector_type = 12 [default = VECTOR_TYPE_VEC4];
+}
+enum DepthStencilFormat {
+  DEPTH_STENCIL_FORMAT_D32F = 1;
+  DEPTH_STENCIL_FORMAT_D32F_S8U = 2;
+  DEPTH_STENCIL_FORMAT_D16U_S8U = 3;
+  DEPTH_STENCIL_FORMAT_D24U_S8U = 4;
+  DEPTH_STENCIL_FORMAT_S8U = 5;
+}
+enum TextureUsageFlag {
+  TEXTURE_USAGE_FLAG_SAMPLE = 1;
+  TEXTURE_USAGE_FLAG_MEMORYLESS = 2;
+  TEXTURE_USAGE_FLAG_STORAGE = 4;
+  TEXTURE_USAGE_FLAG_INPUT = 8;
+  TEXTURE_USAGE_FLAG_COLOR = 16;
+}
+message TextureImage {
+  repeated Image alternatives = 1;
+  required Type type = 2;
+  required uint32 count = 3;
+  optional uint32 usage_flags = 4 [(runtime_only) = true, default = 1];
+  optional uint64 image_data_address = 5 [(runtime_only) = true];
+}
+message TextureFormatAlternative {
+  required TextureImage.TextureFormat format = 1;
+  optional CompressionLevel compression_level = 2;
+  optional TextureImage.CompressionType compression_type = 3 [default = COMPRESSION_TYPE_DEFAULT];
+  optional string compressor = 4;
+  optional string compressor_preset = 5;
+}
+message PathSettings {
+  required string path = 1;
+  required string profile = 2;
+}
+message PlatformProfile {
+  required OS os = 1;
+  repeated TextureFormatAlternative formats = 2;
+  required bool mipmaps = 3;
+  optional uint32 max_texture_size = 4;
+  optional bool premultiply_alpha = 5 [default = true];
+}
+message TextureProfile {
+  required string name = 1;
+  repeated PlatformProfile platforms = 2;
+}
+message TextureProfiles {
+  repeated PathSettings path_settings = 1;
+  repeated TextureProfile profiles = 2;
+}
+message ShaderDesc {
+  repeated Shader shaders = 1;
+  optional ShaderReflection reflection = 2;
+}
+message Point3 {
+  optional float x = 1 [default = 0.0];
+  optional float y = 2 [default = 0.0];
+  optional float z = 3 [default = 0.0];
+  optional float d = 4 [default = 0.0];
+}
+message Vector3 {
+  optional float x = 1 [default = 0.0];
+  optional float y = 2 [default = 0.0];
+  optional float z = 3 [default = 0.0];
+  optional float d = 4 [default = 0.0];
+}
+message Vector3One {
+  optional float x = 1 [default = 1.0];
+  optional float y = 2 [default = 1.0];
+  optional float z = 3 [default = 1.0];
+  optional float d = 4 [default = 1.0];
+}
+message Vector4 {
+  optional float x = 1 [default = 0.0];
+  optional float y = 2 [default = 0.0];
+  optional float z = 3 [default = 0.0];
+  optional float w = 4 [default = 0.0];
+}
+message Vector4One {
+  optional float x = 1 [default = 1.0];
+  optional float y = 2 [default = 1.0];
+  optional float z = 3 [default = 1.0];
+  optional float w = 4 [default = 1.0];
+}
+message Vector4WOne {
+  optional float x = 1 [default = 0.0];
+  optional float y = 2 [default = 0.0];
+  optional float z = 3 [default = 0.0];
+  optional float w = 4 [default = 1.0];
+}
+message Quat {
+  optional float x = 1 [default = 0.0];
+  optional float y = 2 [default = 0.0];
+  optional float z = 3 [default = 0.0];
+  optional float w = 4 [default = 1.0];
+}
+message Transform {
+  optional Quat rotation = 1;
+  optional Vector3 translation = 2;
+  optional Vector3 scale = 3;
+}
+message Matrix4 {
+  optional float m00 = 1 [default = 1.0];
+  optional float m01 = 2 [default = 0.0];
+  optional float m02 = 3 [default = 0.0];
+  optional float m03 = 4 [default = 0.0];
+  optional float m10 = 5 [default = 0.0];
+  optional float m11 = 6 [default = 1.0];
+  optional float m12 = 7 [default = 0.0];
+  optional float m13 = 8 [default = 0.0];
+  optional float m20 = 9 [default = 0.0];
+  optional float m21 = 10 [default = 0.0];
+  optional float m22 = 11 [default = 1.0];
+  optional float m23 = 12 [default = 0.0];
+  optional float m30 = 13 [default = 0.0];
+  optional float m31 = 14 [default = 0.0];
+  optional float m32 = 15 [default = 0.0];
+  optional float m33 = 16 [default = 1.0];
+}
+message DoubleValue {
+  double value = 1;
+}
+message FloatValue {
+  float value = 1;
+}
+message Int64Value {
+  int64 value = 1;
+}
+message UInt64Value {
+  uint64 value = 1;
+}
+message Int32Value {
+  int32 value = 1;
+}
+message UInt32Value {
+  uint32 value = 1;
+}
+message BoolValue {
+  bool value = 1;
+}
+message StringValue {
+  string value = 1;
+}
+message BytesValue {
+  bytes value = 1;
+}
+message SourceContext {
+  string file_name = 1;
+}
+message FieldMask {
+  repeated string paths = 1;
+}
+message Empty {
+}
+message Struct {
+}
+message Value {
+}
+enum NullValue {
+  NULL_VALUE = 0;
+}
+message ListValue {
+  repeated Value values = 1;
+}
+message Type {
+  string name = 1;
+  repeated Field fields = 2;
+  repeated string oneofs = 3;
+  repeated Option options = 4;
+  SourceContext source_context = 5;
+  Syntax syntax = 6;
+}
+message Field {
+  Kind kind = 1;
+  Cardinality cardinality = 2;
+  int32 number = 3;
+  string name = 4;
+  string type_url = 6;
+  int32 oneof_index = 7;
+  bool packed = 8;
+  repeated Option options = 9;
+  string json_name = 10;
+  string default_value = 11;
+}
+message Enum {
+  string name = 1;
+  repeated EnumValue enumvalue = 2;
+  repeated Option options = 3;
+  SourceContext source_context = 4;
+  Syntax syntax = 5;
+}
+message EnumValue {
+  string name = 1;
+  int32 number = 2;
+  repeated Option options = 3;
+}
+message Option {
+  string name = 1;
+  Any value = 2;
+}
+enum Syntax {
+  SYNTAX_PROTO2 = 0;
+  SYNTAX_PROTO3 = 1;
+}
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}
+message FileDescriptorSet {
+  repeated FileDescriptorProto file = 1;
+}
+message FileDescriptorProto {
+  optional string name = 1;
+  optional string package = 2;
+  repeated string dependency = 3;
+  repeated int32 public_dependency = 10;
+  repeated int32 weak_dependency = 11;
+  repeated DescriptorProto message_type = 4;
+  repeated EnumDescriptorProto enum_type = 5;
+  repeated ServiceDescriptorProto service = 6;
+  repeated FieldDescriptorProto extension = 7;
+  optional FileOptions options = 8;
+  optional SourceCodeInfo source_code_info = 9;
+  optional string syntax = 12;
+}
+message DescriptorProto {
+  optional string name = 1;
+  repeated FieldDescriptorProto field = 2;
+  repeated FieldDescriptorProto extension = 6;
+  repeated DescriptorProto nested_type = 3;
+  repeated EnumDescriptorProto enum_type = 4;
+  repeated ExtensionRange extension_range = 5;
+  repeated OneofDescriptorProto oneof_decl = 8;
+  optional MessageOptions options = 7;
+  repeated ReservedRange reserved_range = 9;
+  repeated string reserved_name = 10;
+}
+message ExtensionRangeOptions {
+  repeated UninterpretedOption uninterpreted_option = 999;
+}
+message FieldDescriptorProto {
+  optional string name = 1;
+  optional int32 number = 3;
+  optional Label label = 4;
+  optional Type type = 5;
+  optional string type_name = 6;
+  optional string extendee = 2;
+  optional string default_value = 7;
+  optional int32 oneof_index = 9;
+  optional string json_name = 10;
+  optional FieldOptions options = 8;
+  optional bool proto3_optional = 17;
+}
+message OneofDescriptorProto {
+  optional string name = 1;
+  optional OneofOptions options = 2;
+}
+message EnumDescriptorProto {
+  optional string name = 1;
+  repeated EnumValueDescriptorProto value = 2;
+  optional EnumOptions options = 3;
+  repeated EnumReservedRange reserved_range = 4;
+  repeated string reserved_name = 5;
+}
+message EnumValueDescriptorProto {
+  optional string name = 1;
+  optional int32 number = 2;
+  optional EnumValueOptions options = 3;
+}
+message ServiceDescriptorProto {
+  optional string name = 1;
+  repeated MethodDescriptorProto method = 2;
+  optional ServiceOptions options = 3;
+}
+message MethodDescriptorProto {
+  optional string name = 1;
+  optional string input_type = 2;
+  optional string output_type = 3;
+  optional MethodOptions options = 4;
+  optional bool client_streaming = 5 [default = false];
+  optional bool server_streaming = 6 [default = false];
+}
+message FileOptions {
+  optional string java_package = 1;
+  optional string java_outer_classname = 8;
+  optional bool java_multiple_files = 10 [default = false];
+  optional bool java_generate_equals_and_hash = 20 [deprecated = true];
+  optional bool java_string_check_utf8 = 27 [default = false];
+  optional OptimizeMode optimize_for = 9 [default = SPEED];
+  optional string go_package = 11;
+  optional bool cc_generic_services = 16 [default = false];
+  optional bool java_generic_services = 17 [default = false];
+  optional bool py_generic_services = 18 [default = false];
+  optional bool php_generic_services = 42 [default = false];
+  optional bool deprecated = 23 [default = false];
+  optional bool cc_enable_arenas = 31 [default = true];
+  optional string objc_class_prefix = 36;
+  optional string csharp_namespace = 37;
+  optional string swift_prefix = 39;
+  optional string php_class_prefix = 40;
+  optional string php_namespace = 41;
+  optional string php_metadata_namespace = 44;
+  optional string ruby_package = 45;
+  repeated UninterpretedOption uninterpreted_option = 999;
+}
+message MessageOptions {
+  optional bool message_set_wire_format = 1 [default = false];
+  optional bool no_standard_descriptor_accessor = 2 [default = false];
+  optional bool deprecated = 3 [default = false];
+  optional bool map_entry = 7;
+  repeated UninterpretedOption uninterpreted_option = 999;
+}
+message FieldOptions {
+  optional CType ctype = 1 [default = STRING];
+  optional bool packed = 2;
+  optional JSType jstype = 6 [default = JS_NORMAL];
+  optional bool lazy = 5 [default = false];
+  optional bool unverified_lazy = 15 [default = false];
+  optional bool deprecated = 3 [default = false];
+  optional bool weak = 10 [default = false];
+  repeated UninterpretedOption uninterpreted_option = 999;
+}
+message OneofOptions {
+  repeated UninterpretedOption uninterpreted_option = 999;
+}
+message EnumOptions {
+  optional bool allow_alias = 2;
+  optional bool deprecated = 3 [default = false];
+  repeated UninterpretedOption uninterpreted_option = 999;
+}
+message EnumValueOptions {
+  optional bool deprecated = 1 [default = false];
+  repeated UninterpretedOption uninterpreted_option = 999;
+}
+message ServiceOptions {
+  optional bool deprecated = 33 [default = false];
+  repeated UninterpretedOption uninterpreted_option = 999;
+}
+message MethodOptions {
+  optional bool deprecated = 33 [default = false];
+  optional IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
+  repeated UninterpretedOption uninterpreted_option = 999;
+}
+message UninterpretedOption {
+  repeated NamePart name = 2;
+  optional string identifier_value = 3;
+  optional uint64 positive_int_value = 4;
+  optional int64 negative_int_value = 5;
+  optional double double_value = 6;
+  optional bytes string_value = 7;
+  optional string aggregate_value = 8;
+}
+message SourceCodeInfo {
+  repeated Location location = 1;
+}
+message GeneratedCodeInfo {
+  repeated Annotation annotation = 1;
+}
+message Api {
+  string name = 1;
+  repeated Method methods = 2;
+  repeated Option options = 3;
+  string version = 4;
+  SourceContext source_context = 5;
+  repeated Mixin mixins = 6;
+  Syntax syntax = 7;
+}
+message Method {
+  string name = 1;
+  string request_type_url = 2;
+  bool request_streaming = 3;
+  string response_type_url = 4;
+  bool response_streaming = 5;
+  repeated Option options = 6;
+  Syntax syntax = 7;
+}
+message Mixin {
+  string name = 1;
+  string root = 2;
+}
+message Duration {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}
+message Any {
+  string type_url = 1;
+  bytes value = 2;
+}
+message Version {
+  optional int32 major = 1;
+  optional int32 minor = 2;
+  optional int32 patch = 3;
+  optional string suffix = 4;
+}
+message CodeGeneratorRequest {
+  repeated string file_to_generate = 1;
+  optional string parameter = 2;
+  repeated FileDescriptorProto proto_file = 15;
+  optional Version compiler_version = 3;
+}
+message CodeGeneratorResponse {
+  optional string error = 1;
+  optional uint64 supported_features = 2;
+  repeated File file = 15;
+}
+message PropertyDeclarationEntry {
+  required string key = 1;
+  required uint64 id = 2;
+  required uint32 index = 3;
+  repeated uint64 element_ids = 4;
+}
+message PropertyDeclarations {
+  repeated PropertyDeclarationEntry number_entries = 1;
+  repeated PropertyDeclarationEntry hash_entries = 2;
+  repeated PropertyDeclarationEntry url_entries = 3;
+  repeated PropertyDeclarationEntry vector3_entries = 4;
+  repeated PropertyDeclarationEntry vector4_entries = 5;
+  repeated PropertyDeclarationEntry quat_entries = 6;
+  repeated PropertyDeclarationEntry bool_entries = 7;
+  repeated float float_values = 8;
+  repeated uint64 hash_values = 9;
+  repeated string string_values = 10;
+}
+enum PropertyType {
+  PROPERTY_TYPE_NUMBER = 0;
+  PROPERTY_TYPE_HASH = 1;
+  PROPERTY_TYPE_URL = 2;
+  PROPERTY_TYPE_VECTOR3 = 3;
+  PROPERTY_TYPE_VECTOR4 = 4;
+  PROPERTY_TYPE_QUAT = 5;
+  PROPERTY_TYPE_BOOLEAN = 6;
+  PROPERTY_TYPE_MATRIX4 = 7;
+  PROPERTY_TYPE_COUNT = 8;
+}
+message PropertyDesc {
+  required string id = 1;
+  required string value = 2;
+  required PropertyType type = 3;
+}
+message ComponentDesc {
+  required string id = 1;
+  required string component = 2 [(resource) = true];
+  optional dmMath.Point3 position = 3;
+  optional dmMath.Quat rotation = 4;
+  repeated PropertyDesc properties = 5;
+  optional dmPropertiesDDF.PropertyDeclarations property_decls = 6 [(runtime_only) = true];
+  optional dmMath.Vector3One scale = 7;
+}
+message EmbeddedComponentDesc {
+  required string id = 1;
+  required string type = 2;
+  required string data = 3;
+  optional dmMath.Point3 position = 4;
+  optional dmMath.Quat rotation = 5;
+  optional dmMath.Vector3One scale = 6;
+}
+message PrototypeDesc {
+  repeated ComponentDesc components = 1;
+  repeated EmbeddedComponentDesc embedded_components = 2;
+  repeated string property_resources = 3 [(runtime_only) = true, (resource) = true];
+}
+message ComponentPropertyDesc {
+  required string id = 1;
+  repeated PropertyDesc properties = 2;
+  optional dmPropertiesDDF.PropertyDeclarations property_decls = 3 [(runtime_only) = true];
+}
+message ComponenTypeDesc {
+  required uint64 name_hash = 1;
+  required uint32 max_count = 2;
+}
+message InstanceDesc {
+  required string id = 1;
+  required string prototype = 2 [(resource) = true];
+  repeated string children = 3;
+  optional dmMath.Point3 position = 4;
+  optional dmMath.Quat rotation = 5;
+  repeated ComponentPropertyDesc component_properties = 6;
+  optional float scale = 7 [default = 1.0];
+  optional dmMath.Vector3One scale3 = 8;
+}
+message EmbeddedInstanceDesc {
+  required string id = 1;
+  repeated string children = 2;
+  required string data = 3;
+  optional dmMath.Point3 position = 4;
+  optional dmMath.Quat rotation = 5;
+  repeated ComponentPropertyDesc component_properties = 6;
+  optional float scale = 7 [default = 1.0];
+  optional dmMath.Vector3One scale3 = 8;
+}
+message InstancePropertyDesc {
+  required string id = 1;
+  repeated ComponentPropertyDesc properties = 2;
+}
+message CollectionInstanceDesc {
+  required string id = 1;
+  required string collection = 2 [(resource) = true];
+  optional dmMath.Point3 position = 3;
+  optional dmMath.Quat rotation = 4;
+  optional float scale = 5 [default = 1.0];
+  optional dmMath.Vector3One scale3 = 7;
+  repeated InstancePropertyDesc instance_properties = 6;
+}
+message CollectionDesc {
+  required string name = 1;
+  repeated InstanceDesc instances = 2;
+  repeated CollectionInstanceDesc collection_instances = 3;
+  optional uint32 scale_along_z = 4 [default = 0];
+  repeated EmbeddedInstanceDesc embedded_instances = 5;
+  repeated string property_resources = 6 [(runtime_only) = true, (resource) = true];
+  repeated ComponenTypeDesc component_types = 7 [(runtime_only) = true];
+}
+message AcquireInputFocus {
+}
+message ReleaseInputFocus {
+}
+message SetParent {
+  optional uint64 parent_id = 1 [default = 0];
+  optional uint32 keep_world_transform = 2 [default = 1];
+}
+message Enable {
+}
+message Disable {
+}
+message ScriptMessage {
+  required uint64 descriptor_hash = 1;
+  required uint32 payload_size = 2;
+  optional uint32 function = 3;
+  optional bool unref_function = 4;
+}
+message ScriptUnrefMessage {
+  required uint32 reference = 1;
+}
+message LuaModule {
+  required LuaSource source = 1;
+  repeated string modules = 2;
+  repeated string resources = 3 [(resource) = true];
+  optional dmPropertiesDDF.PropertyDeclarations properties = 4;
+  repeated string property_resources = 5 [(resource) = true];
+}
+message Reload {
+  repeated string resources = 1;
+}
+enum HashAlgorithm {
+  HASH_UNKNOWN = 0;
+  HASH_MD5 = 1;
+  HASH_SHA1 = 2;
+  HASH_SHA256 = 3;
+  HASH_SHA512 = 4;
+}
+enum SignAlgorithm {
+  SIGN_UNKNOWN = 0;
+  SIGN_RSA = 1;
+}
+enum ResourceEntryFlag {
+  BUNDLED = 1;
+  EXCLUDED = 2;
+  ENCRYPTED = 4;
+  COMPRESSED = 8;
+}
+message HashDigest {
+  required bytes data = 1;
+}
+message ManifestHeader {
+  required HashAlgorithm resource_hash_algorithm = 1 [default = HASH_SHA256];
+  required HashAlgorithm signature_hash_algorithm = 2 [default = HASH_SHA256];
+  required SignAlgorithm signature_sign_algorithm = 3 [default = SIGN_RSA];
+  required HashDigest project_identifier = 4;
+}
+message ResourceEntry {
+  required HashDigest hash = 1;
+  required string url = 2;
+  required uint64 url_hash = 3;
+  required uint32 size = 4;
+  required uint32 compressed_size = 5;
+  required uint32 flags = 6 [default = 0];
+  repeated uint64 dependants = 7;
+}
+message ManifestData {
+  required ManifestHeader header = 1;
+  repeated HashDigest engine_versions = 2;
+  repeated ResourceEntry resources = 3;
+}
+message ManifestFile {
+  required bytes data = 1;
+  required bytes signature = 2;
+  optional bytes archive_identifier = 3;
+  required uint32 version = 4 [default = 0];
+}
