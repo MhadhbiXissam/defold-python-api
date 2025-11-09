@@ -12,4 +12,4 @@ p = o.addCollectionProxy(id = "proxy")
 o.addCamera(id = "cam")
 
 
-print(x.model_dump_json(indent=4,exclude_defaults=False))
+print(x.model_dump_json(indent=4))
